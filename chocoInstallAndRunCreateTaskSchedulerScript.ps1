@@ -16,4 +16,4 @@ choco install -y nodejs
 cd "C:\"
 mkdir "Workspaces"
 wsl.exe --update
-powershell.exe -File 'C:\scripts\scheduler.ps1'
+powershell.exe -File 'C:\scheduler.ps1'
