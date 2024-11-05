@@ -14,4 +14,10 @@ foreach ($extension in $extensions) {
 }
 
 cd C:\Workspaces
-git clone https://avadevboxpoc@dev.azure.com/avadevboxpoc/Dev%20Box%20POC/_git/To-Do-List-WebApp
+#Checking if destination folder exists
+if (Test-Path "C:\Workspaces\To-Do-List-WebApp") {
+    git clone https://avadevboxpoc@dev.azure.com/avadevboxpoc/Dev%20Box%20POC/_git/To-Do-List-WebApp
+}
+else {
+    Write-Host "Repo already exist"
+}
