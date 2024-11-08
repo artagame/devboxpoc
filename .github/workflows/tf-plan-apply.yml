@@ -6,11 +6,13 @@ on:
     - main
     paths:
       - 'tf/**'
+      - '.github/workflows/**'
   pull_request:
     branches:
     - main
     paths:
       - 'tf/**'
+      - '.github/workflows/**'
 
 #Special permissions required for OIDC authentication
 permissions:
