@@ -28,10 +28,10 @@ resource "azurerm_user_assigned_identity" "userIdentity" {
   resource_group_name = data.azurerm_resource_group.rg.name
 }
 
-resource "azurerm_role_assignment" "example" {
+resource "azurerm_role_assignment" "userIdentityRoleAssignment" {
   scope                = data.azurerm_resource_group.rg.id
   role_definition_name = "Contributor"
-  principal_id         = azurerm_user_assigned_identity.userIdentity.client_id
+  principal_id         = azurerm_user_assigned_identity.userIdentity.principal_id
 }
 
 # Dev Center

@@ -150,18 +150,14 @@ jobs:
     - name: Terraform Init
       run: terraform init
 
-    # Download saved plan from artifacts  
+    # Download saved plan from artifacts
     - name: Download Terraform Plan
       uses: actions/download-artifact@v4
       with:
         path: tf
         name: tfplan
 
-    - name: Display structure of downloaded files
-      run: ls -R
-
     # Terraform Apply
     - name: Terraform Apply
       run: |
-        ls
         terraform apply -auto-approve terraform.tfplan
