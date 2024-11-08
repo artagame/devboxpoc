@@ -1,7 +1,7 @@
 variable "devCenterUserIdentity" {
-    type = string
+  type = string
 }
 
 variable "devCenterName" {
-    type = string
+  type = string
 }

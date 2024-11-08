@@ -1,3 +1,3 @@
 data "azurerm_resource_group" "rg" {
-    name = "rg-test-ae-compute-002"
+  name = "rg-test-ae-compute-002"
 }
