@@ -67,7 +67,7 @@ jobs:
       id: tf-plan
       run: |
         export exitcode=0
-        terraform plan -var-file='variables/dev.tfvars' -detailed-exitcode -no-color -out tfplan || export exitcode=$?
+        terraform plan -var-file='variables/dev.tfvars' -detailed-exitcode -no-color -out terraform.tfplan || export exitcode=$?
 
         echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
         
@@ -83,7 +83,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: tfplan
-        path: tf/tfplan
+        path: tf/terraform.tfplan
         
     # Create string output of Terraform Plan
     - name: Create String Output
@@ -160,4 +160,4 @@ jobs:
     - name: Terraform Apply
       run: |
         ls
-        terraform apply -auto-approve tfplan
+        terraform apply -auto-approve terraform.tfplan
