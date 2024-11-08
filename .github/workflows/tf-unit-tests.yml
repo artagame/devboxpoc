@@ -12,7 +12,11 @@ jobs:
   terraform-unit-tests:
     name: 'Terraform Unit Tests'
     runs-on: ubuntu-latest
-    
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./tf
+
     steps:
     # Checkout the repository to the GitHub Actions runner
     - name: Checkout
