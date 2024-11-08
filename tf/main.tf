@@ -45,6 +45,6 @@ resource "azurerm_dev_center" "devCenter" {
   resource_group_name = data.azurerm_resource_group.rg.name
   identity {
     type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.userIdentity.client_id]
+    identity_ids = [azurerm_user_assigned_identity.userIdentity.id]
   }
 }
