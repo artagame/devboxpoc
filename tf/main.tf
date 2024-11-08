@@ -21,10 +21,6 @@ provider "azurerm" {
   use_oidc = true
 }
 
-import {
-  to = azurerm_user_assigned_identity.userIdentity
-  id = "/subscriptions/11be4bd6-d890-421b-85aa-9d4c9c612545/resourceGroups/rg-test-ae-compute-002/providers/Microsoft.ManagedIdentity/userAssignedIdentities/dev-poc-uid-aue-001"
-}
 # User Managed Identity
 resource "azurerm_user_assigned_identity" "userIdentity" {
   location            = data.azurerm_resource_group.rg.location
