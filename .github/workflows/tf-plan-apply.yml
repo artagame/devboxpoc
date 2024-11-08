@@ -154,6 +154,7 @@ jobs:
     - name: Download Terraform Plan
       uses: actions/download-artifact@v4
       with:
+        path: tf
         name: tfplan
 
     - name: Display structure of downloaded files
