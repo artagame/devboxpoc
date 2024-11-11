@@ -196,7 +196,7 @@ jobs:
     # Terraform Plan Destroy - Check what to destroy
     - name: Terraform Plan Destroy
       run: |
-        terraform plan -destroy -auto-approve terraform.tfplan
+        terraform plan -destroy
 
     # # Terraform Destroy
     # - name: Terraform Destroy
