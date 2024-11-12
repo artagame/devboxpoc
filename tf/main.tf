@@ -151,7 +151,7 @@ resource "azapi_resource" "imageTemplate" {
         {
           artifactTags      = {}
           excludeFromLatest = false
-          galleryImageId    = azurerm_shared_image_gallery.azureGallery.id
+          galleryImageId    = azurerm_shared_image.customImageDefinition.id
           runOutputName     = "runOutputImageVersion"
           type              = "SharedImage"
           targetRegions     = []
