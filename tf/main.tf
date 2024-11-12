@@ -45,18 +45,6 @@ resource "azurerm_dev_center" "devCenter" {
   }
 }
 
-resource "azurerm_dev_center_catalog" "devCenterCatalogs" {
-  name                = "DevBoxQuickStartTasks"
-  resource_group_name = data.azurerm_resource_group.rg.name
-  dev_center_id       = azurerm_dev_center.devCenter.id
-  catalog_github {
-    branch            = "main"
-    path              = ""
-    uri               = "https://github.com/microsoft/devcenter-catalog.git"
-    key_vault_key_url = ""
-  }
-}
-
 resource "azurerm_dev_center_project" "devCenterProject" {
   dev_center_id       = azurerm_dev_center.devCenter.id
   location            = data.azurerm_resource_group.rg.location
