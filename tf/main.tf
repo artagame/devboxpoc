@@ -44,3 +44,52 @@ resource "azurerm_dev_center" "devCenter" {
     identity_ids = [azurerm_user_assigned_identity.userIdentity.id]
   }
 }
+
+# Dev Center
+resource "azurerm_dev_center" "devCenter" {
+  location            = data.azurerm_resource_group.rg.location
+  name                = var.devCenterName
+  resource_group_name = data.azurerm_resource_group.rg.name
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.userIdentity.id]
+  }
+}
+
+resource "azurerm_dev_center_catalog" "devCenterCatalogs" {
+  name                = "DevBoxQuickStartTasks"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  dev_center_id       = azurerm_dev_center.devCenter.id
+  catalog_github {
+    branch            = "main"
+    path              = ""
+    uri               = "https://github.com/microsoft/devcenter-catalog.git"
+    key_vault_key_url = ""
+  }
+}
+
+resource "azurerm_dev_center_catalog" "devCenterCatalogs" {
+  name                = "DevBoxQuickStartTasks"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  dev_center_id       = azurerm_dev_center.devCenter.id
+  catalog_github {
+    branch            = "main"
+    path              = ""
+    uri               = "https://github.com/microsoft/devcenter-catalog.git"
+    key_vault_key_url = ""
+  }
+}
+
+resource "azurerm_dev_center_project" "devCenterProject" {
+  dev_center_id       = azurerm_dev_center.devCenter.id
+  location            = data.azurerm_resource_group.rg.location
+  name                = var.projectName
+  resource_group_name = data.azurerm_resource_group.rg.name
+}
+
+resource "azurerm_shared_image_gallery" "azureGallery" {
+  name                = var.galleryName
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  description         = "Test Gallery"
+}

@@ -5,3 +5,11 @@ variable "devCenterUserIdentity" {
 variable "devCenterName" {
   type = string
 }
+
+variable "projectName" {
+  type = string
+}
+
+variable "galleryName" {
+  type = string
+}
