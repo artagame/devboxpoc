@@ -45,17 +45,6 @@ resource "azurerm_dev_center" "devCenter" {
   }
 }
 
-# Dev Center
-resource "azurerm_dev_center" "devCenter" {
-  location            = data.azurerm_resource_group.rg.location
-  name                = var.devCenterName
-  resource_group_name = data.azurerm_resource_group.rg.name
-  identity {
-    type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.userIdentity.id]
-  }
-}
-
 resource "azurerm_dev_center_catalog" "devCenterCatalogs" {
   name                = "DevBoxQuickStartTasks"
   resource_group_name = data.azurerm_resource_group.rg.name
