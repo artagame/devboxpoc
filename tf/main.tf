@@ -154,6 +154,7 @@ resource "azapi_resource" "imageTemplate" {
           galleryImageId    = azurerm_shared_image_gallery.azureGallery.id
           runOutputName     = "runOutputImageVersion"
           type              = "SharedImage"
+          targetRegions     = []
         }
       ]
       source = {
