@@ -191,7 +191,7 @@ jobs:
       run: |
         terraform destroy -var-file='variables/dev.tfvars'
 
-    # # Terraform Destroy
-    # - name: Terraform Destroy
-    #   run: |
-    #     terraform apply -auto-approve terraform.tfplan
+    # Terraform Destroy
+    - name: Terraform Apply Destroy
+      run: |
+        terraform apply -auto-approve
