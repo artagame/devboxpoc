@@ -17,3 +17,7 @@ variable "galleryName" {
 variable "imageDefinitionName" {
   type = string
 }
+
+variable "imageTemplateName" {
+  type = string
+}
