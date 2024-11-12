@@ -134,7 +134,7 @@ jobs:
       run:
         shell: bash
         working-directory: ./tf
-    environment: DEV
+    environment: DEV-Apply
     needs: [terraform-plan]
     
     steps:
@@ -164,13 +164,13 @@ jobs:
 
   terraform-destroy:
     name: 'Terraform Destroy'
-    if: github.ref == 'refs/heads/main' && needs.terraform-plan.outputs.tfplanExitCode == 2
+    if: github.ref == 'refs/heads/main' && needs.terraform-plan.outputs.tfplanExitCode == 0
     runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash
         working-directory: ./tf
-    environment: DEV
+    environment: DEV-Destroy
     needs: [terraform-plan]
     
     steps:
