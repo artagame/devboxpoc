@@ -103,7 +103,7 @@ resource "azapi_resource" "imageTemplate" {
   body = {
     properties = {
       autoRun = {
-        state = "On" # Set to "On" or "Off" as required
+        state = "Enabled"
       }
       buildTimeoutInMinutes = 0
       customize = [
