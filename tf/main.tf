@@ -94,39 +94,48 @@ resource "azapi_resource" "imageTemplate" {
   name      = var.imageTemplateName
   location  = data.azurerm_resource_group.rg.location
   parent_id = data.azurerm_resource_group.rg.id
+
   identity {
     type         = "UserAssigned"
     identity_ids = [azurerm_user_assigned_identity.userIdentity.id]
   }
+
   body = jsonencode({
     properties = {
       autoRun = {
-        state = "string"
+        state = "On" # Set to "On" or "Off" as required
       }
       buildTimeoutInMinutes = 0
       customize = [
         {
-          destination    = "C:/scheduler.ps1"
-          name           = "Upload Create Scheduled Task Script"
-          sha256Checksum = "ff06220855bbb7448ed4d5e99dca1c8a52fbdf27d179b90c3a96b570231a1d9e"
-          sourceUri      = "https://raw.githubusercontent.com/artagame/devboxpoc/refs/heads/main/scheduler.ps1"
-          type           = "File"
+          destination = "C:/scheduler.ps1"
+          name        = "Upload Create Scheduled Task Script"
+          sourceUri   = "https://raw.githubusercontent.com/artagame/devboxpoc/refs/heads/main/scheduler.ps1"
+          type        = "File"
         },
         {
-          destination    = "C:/installVSCodeExtensionsAndCloneRepo.ps1"
-          name           = "Upload Install VS Code Extensions and Clone Repo Script"
-          sha256Checksum = "8448d9fb641044f267a83c17bb44c43984fd76eebd586dbb5ccac8380ea113f7"
-          sourceUri      = "https://raw.githubusercontent.com/artagame/devboxpoc/refs/heads/main/installVSCodeExtensionsAndCloneRepo.ps1"
-          type           = "File"
+          destination = "C:/installVSCodeExtensionsAndCloneRepo.ps1"
+          name        = "Upload Install VS Code Extensions and Clone Repo Script"
+          sourceUri   = "https://raw.githubusercontent.com/artagame/devboxpoc/refs/heads/main/installVSCodeExtensionsAndCloneRepo.ps1"
+          type        = "File"
         },
         {
           inline = [
-            "# Set Execution Policy to Bypass for the current process\nSet-ExecutionPolicy Bypass -Scope Process -Force\n\n# Set security protocol to support TLS 1.2\n[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072\n\n# Install Chocolatey\niex ((New-Object System.Net.WebClient).DownloadString(\"https://community.chocolatey.org/install.ps1\"))\n\n# Install Git",
-            "Azure CLI",
-            "and Visual Studio Code\nchoco install -y git\nchoco install -y azure-cli\nchoco install -y vscode\nchoco install -y nodejs\n\ncd \"C:\\\"\nmkdir \"Workspaces\"\nwsl.exe --update\npowershell.exe -File 'C:\\scheduler.ps1'"
+            "# Set Execution Policy to Bypass for the current process",
+            "Set-ExecutionPolicy Bypass -Scope Process -Force",
+            "# Set security protocol to support TLS 1.2",
+            "[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072",
+            "# Install Chocolatey",
+            "iex ((New-Object System.Net.WebClient).DownloadString(\"https://community.chocolatey.org/install.ps1\"))",
+            "# Install Git, Azure CLI, Visual Studio Code, and Node.js",
+            "choco install -y git azure-cli vscode nodejs",
+            "cd C:\\",
+            "mkdir Workspaces",
+            "wsl.exe --update",
+            "powershell.exe -File 'C:\\scheduler.ps1'"
           ]
           name        = "Choco Tasks and Trigger Create Scheduled Task Script"
-          runAsSystem = false,
+          runAsSystem = false
           runElevated = false
           type        = "PowerShell"
         }
