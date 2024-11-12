@@ -186,13 +186,6 @@ jobs:
     - name: Terraform Init
       run: terraform init
 
-    # Download saved plan from artifacts
-    - name: Download Terraform Plan
-      uses: actions/download-artifact@v4
-      with:
-        path: tf
-        name: tfplan
-
     # Terraform Plan Destroy - Check what to destroy
     - name: Terraform Plan Destroy
       run: |
