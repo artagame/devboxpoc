@@ -100,7 +100,7 @@ resource "azapi_resource" "imageTemplate" {
     identity_ids = [azurerm_user_assigned_identity.userIdentity.id]
   }
 
-  body = jsonencode({
+  body = {
     properties = {
       autoRun = {
         state = "On" # Set to "On" or "Off" as required
@@ -108,16 +108,18 @@ resource "azapi_resource" "imageTemplate" {
       buildTimeoutInMinutes = 0
       customize = [
         {
-          destination = "C:/scheduler.ps1"
-          name        = "Upload Create Scheduled Task Script"
-          sourceUri   = "https://raw.githubusercontent.com/artagame/devboxpoc/refs/heads/main/scheduler.ps1"
-          type        = "File"
+          destination    = "C:/scheduler.ps1"
+          name           = "Upload Create Scheduled Task Script"
+          sha256Checksum = "ff06220855bbb7448ed4d5e99dca1c8a52fbdf27d179b90c3a96b570231a1d9e"
+          sourceUri      = "https://raw.githubusercontent.com/artagame/devboxpoc/refs/heads/main/scheduler.ps1"
+          type           = "File"
         },
         {
-          destination = "C:/installVSCodeExtensionsAndCloneRepo.ps1"
-          name        = "Upload Install VS Code Extensions and Clone Repo Script"
-          sourceUri   = "https://raw.githubusercontent.com/artagame/devboxpoc/refs/heads/main/installVSCodeExtensionsAndCloneRepo.ps1"
-          type        = "File"
+          destination    = "C:/installVSCodeExtensionsAndCloneRepo.ps1"
+          name           = "Upload Install VS Code Extensions and Clone Repo Script"
+          sha256Checksum = "8448d9fb641044f267a83c17bb44c43984fd76eebd586dbb5ccac8380ea113f7"
+          sourceUri      = "https://raw.githubusercontent.com/artagame/devboxpoc/refs/heads/main/installVSCodeExtensionsAndCloneRepo.ps1"
+          type           = "File"
         },
         {
           inline = [
@@ -161,5 +163,5 @@ resource "azapi_resource" "imageTemplate" {
         vmSize       = "Standard_DS1_v2"
       }
     }
-  })
+  }
 }
