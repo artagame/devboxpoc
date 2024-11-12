@@ -58,3 +58,32 @@ resource "azurerm_shared_image_gallery" "azureGallery" {
   location            = data.azurerm_resource_group.rg.location
   description         = "Test Gallery"
 }
+
+resource "azurerm_dev_center_gallery" "devCenterGallery" {
+  dev_center_id     = azurerm_dev_center.devCenter.id
+  shared_gallery_id = azurerm_shared_image_gallery.azureGallery.id
+  name              = var.galleryName
+}
+
+resource "azurerm_shared_image" "customImageDefinition" {
+  name                = var.imageDefinitionName
+  gallery_name        = azurerm_shared_image_gallery.azureGallery.name
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  os_type             = "Windows"
+
+  identifier {
+    publisher = var.imageDefinitionName
+    offer     = var.imageDefinitionName
+    sku       = "1-0-0"
+  }
+  hyper_v_generation           = "V2"
+  architecture                 = "x64"
+  trusted_launch_enabled       = true
+  specialized                  = "Generalized"
+  min_recommended_vcpu_count   = 1
+  max_recommended_vcpu_count   = 16
+  min_recommended_memory_in_gb = 1
+  max_recommended_memory_in_gb = 32
+
+}

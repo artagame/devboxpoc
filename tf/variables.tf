@@ -13,3 +13,7 @@ variable "projectName" {
 variable "galleryName" {
   type = string
 }
+
+variable "imageDefinitionName" {
+  type = string
+}
