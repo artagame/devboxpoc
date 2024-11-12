@@ -80,7 +80,6 @@ resource "azurerm_shared_image" "customImageDefinition" {
   hyper_v_generation           = "V2"
   architecture                 = "x64"
   trusted_launch_enabled       = true
-  specialized                  = "Generalized"
   min_recommended_vcpu_count   = 1
   max_recommended_vcpu_count   = 16
   min_recommended_memory_in_gb = 1
