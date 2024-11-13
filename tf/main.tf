@@ -179,6 +179,7 @@ resource "null_resource" "build_image_template" {
   # }
   provisioner "local-exec" {
     command = <<EOT
+      az login
       az image builder run -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --no-wait
       az image builder wait -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --custom "lastRunStatus.runState!='Running'"
       az image builder show -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name}

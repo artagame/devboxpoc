@@ -167,7 +167,6 @@ jobs:
     # Terraform Apply
     - name: Terraform Apply
       run: |
-        az login --service-principal -u $ARM_CLIENT_ID --tenant $ARM_TENANT_ID --allow-no-subscriptions --federated-token ${{ secrets.GITHUB_TOKEN }}
         terraform apply -auto-approve terraform.tfplan
 
   terraform-plan-destroy:
