@@ -92,6 +92,7 @@ resource "azurerm_shared_image" "customImageDefinition" {
   max_recommended_vcpu_count   = 16
   min_recommended_memory_in_gb = 1
   max_recommended_memory_in_gb = 32
+  depends_on                   = [azurerm_shared_image_gallery.azureGallery]
 }
 
 resource "azapi_resource" "imageTemplate" {
@@ -108,7 +109,7 @@ resource "azapi_resource" "imageTemplate" {
   body = {
     properties = {
       autoRun = {
-        state = "Enabled"
+        state = "Disabled"
       }
       buildTimeoutInMinutes = 0
       customize = [
@@ -170,4 +171,40 @@ resource "azapi_resource" "imageTemplate" {
       }
     }
   }
+}
+
+# Example Azure CLI command to build the template and wait
+resource "null_resource" "build_image_template" {
+  triggers = {
+    imageTemplateName = var.imageTemplateName
+  }
+  provisioner "local-exec" {
+    command = <<EOT
+      az image builder run -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --no-wait
+      az image builder wait -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --custom "lastRunStatus.runState!='Running'"
+      az image builder show -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name}
+    EOT
+  }
+
+  # Ensure the script runs after the resource group is created
+  depends_on = [azapi_resource.imageTemplate]
+}
+
+resource "azurerm_dev_center_dev_box_definition" "devBoxDefinition" {
+  name               = azapi_resource.imageTemplate.name
+  location           = data.azurerm_resource_group.rg.location
+  dev_center_id      = azurerm_dev_center.devCenter.id
+  image_reference_id = "${azurerm_dev_center.devCenter.id}/galleries/${azurerm_shared_image_gallery.azureGallery.name}/images/${azapi_resource.imageTemplate.name}"
+  sku_name           = "general_i_8c32gb256ssd_v2"
+  depends_on         = [null_resource.build_image_template]
+}
+
+resource "azurerm_dev_center_project_pool" "devBoxPool" {
+  name                                    = var.devBoxPoolName
+  location                                = data.azurerm_resource_group.rg.location
+  dev_center_project_id                   = azurerm_dev_center.devCenter.id
+  dev_box_definition_name                 = azurerm_dev_center_dev_box_definition.devBoxDefinition.name
+  local_administrator_enabled             = true
+  stop_on_disconnect_grace_period_minutes = 60
+  depends_on                              = [azurerm_dev_center_dev_box_definition.devBoxDefinition]
 }

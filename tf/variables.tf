@@ -21,3 +21,7 @@ variable "imageDefinitionName" {
 variable "imageTemplateName" {
   type = string
 }
+
+variable "devBoxPoolName" {
+  type = string
+}
