@@ -174,9 +174,9 @@ resource "azapi_resource" "imageTemplate" {
 
 # Example Azure CLI command to build the template and wait
 resource "null_resource" "build_image_template" {
-  triggers = {
-    imageTemplateName = var.imageTemplateName
-  }
+  # triggers = {
+  #   imageTemplateName = var.imageTemplateName
+  # }
   provisioner "local-exec" {
     command = <<EOT
       az image builder run -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --no-wait
@@ -201,7 +201,7 @@ resource "azurerm_dev_center_dev_box_definition" "devBoxDefinition" {
 resource "azurerm_dev_center_project_pool" "devBoxPool" {
   name                                    = var.devBoxPoolName
   location                                = data.azurerm_resource_group.rg.location
-  dev_center_project_id                   = azurerm_dev_center.devCenter.id
+  dev_center_project_id                   = azurerm_dev_center_project.devCenterProject.id
   dev_box_definition_name                 = azurerm_dev_center_dev_box_definition.devBoxDefinition.name
   local_administrator_enabled             = true
   dev_center_attached_network_name        = "managedNetwork"
