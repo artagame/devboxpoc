@@ -180,11 +180,6 @@ resource "null_resource" "build_image_template" {
   #   imageTemplateName = var.imageTemplateName
   # }
   provisioner "local-exec" {
-    environment = {
-      ARM_CLIENT_ID       = var.client_id
-      ARM_TENANT_ID       = var.tenant_id
-      ARM_SUBSCRIPTION_ID = var.subscription_id
-    }
     command = <<EOT
       az image builder run -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --no-wait
       az image builder wait -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --custom "lastRunStatus.runState!='Running'"
