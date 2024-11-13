@@ -74,30 +74,30 @@ jobs:
       id: tf-plan
       run: |
         export exitcode=0
-        terraform plan -var-file='variables/dev.tfvars' -detailed-exitcode -no-color -out terraform.tfplan || export exitcode=$?
+        terraform plan -var-file='variables/dev.tfvars' -var "client_id=$ARM_CLIENT_ID" -var "tenant_id=$ARM_TENANT_ID" -var "subscription_id=$ARM_SUBSCRIPTION_ID" -detailed-exitcode -no-color -out terraform.tfplan || export exitcode=$?
 
         echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
-        
+
         if [ $exitcode -eq 1 ]; then
           echo Terraform Plan Failed!
           exit 1
-        else 
+        else
           exit 0
         fi
-        
-    # Save plan to artifacts  
+
+    # Save plan to artifacts
     - name: Publish Terraform Plan
       uses: actions/upload-artifact@v4
       with:
         name: tfplan
         path: tf/terraform.tfplan
-        
+
     # Create string output of Terraform Plan
     - name: Create String Output
       id: tf-plan-string
       run: |
         TERRAFORM_PLAN=$(terraform show -no-color terraform.tfplan)
-        
+
         delimiter="$(openssl rand -hex 8)"
         echo "summary<<${delimiter}" >> $GITHUB_OUTPUT
         echo "## Terraform Plan Output" >> $GITHUB_OUTPUT
@@ -108,14 +108,14 @@ jobs:
         echo '```' >> $GITHUB_OUTPUT
         echo "</details>" >> $GITHUB_OUTPUT
         echo "${delimiter}" >> $GITHUB_OUTPUT
-        
+
     # Publish Terraform Plan as task summary
     - name: Publish Terraform Plan to Task Summary
       env:
         SUMMARY: ${{ steps.tf-plan-string.outputs.summary }}
       run: |
         echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
-      
+
     # If this is a PR post the changes
     - name: Push Terraform Output to PR
       if: github.ref != 'refs/heads/main'
@@ -167,7 +167,10 @@ jobs:
     # Terraform Apply
     - name: Terraform Apply
       run: |
-        terraform apply -auto-approve terraform.tfplan
+        terraform apply -auto-approve terraform.tfplan \
+            -var "client_id=$ARM_CLIENT_ID" \
+            -var "tenant_id=$ARM_TENANT_ID" \
+            -var "subscription_id=$ARM_SUBSCRIPTION_ID"
 
   terraform-plan-destroy:
     name: 'Terraform Plan Destroy'
@@ -209,30 +212,30 @@ jobs:
       id: tf-plan
       run: |
         export exitcode=0
-        terraform plan -var-file='variables/dev.tfvars' -destroy -detailed-exitcode -no-color -out terraform.tfplan || export exitcode=$?
+        terraform plan -destroy -var-file='variables/dev.tfvars' -var "client_id=$ARM_CLIENT_ID" -var "tenant_id=$ARM_TENANT_ID" -var "subscription_id=$ARM_SUBSCRIPTION_ID" -detailed-exitcode -no-color -out terraform.tfplan || export exitcode=$?
 
         echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
-        
+
         if [ $exitcode -eq 1 ]; then
           echo Terraform Plan Failed!
           exit 1
-        else 
+        else
           exit 0
         fi
-        
-    # Save plan to artifacts  
+
+    # Save plan to artifacts
     - name: Publish Terraform Plan
       uses: actions/upload-artifact@v4
       with:
         name: tfplan
         path: tf/terraform.tfplan
-        
+
     # Create string output of Terraform Plan
     - name: Create String Output
       id: tf-plan-string
       run: |
         TERRAFORM_PLAN=$(terraform show -no-color terraform.tfplan)
-        
+
         delimiter="$(openssl rand -hex 8)"
         echo "summary<<${delimiter}" >> $GITHUB_OUTPUT
         echo "## Terraform Plan Output" >> $GITHUB_OUTPUT
@@ -243,14 +246,14 @@ jobs:
         echo '```' >> $GITHUB_OUTPUT
         echo "</details>" >> $GITHUB_OUTPUT
         echo "${delimiter}" >> $GITHUB_OUTPUT
-        
+
     # Publish Terraform Plan as task summary
     - name: Publish Terraform Plan to Task Summary
       env:
         SUMMARY: ${{ steps.tf-plan-string.outputs.summary }}
       run: |
         echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
-      
+
     # If this is a PR post the changes
     - name: Push Terraform Output to PR
       if: github.ref != 'refs/heads/main'
@@ -278,7 +281,7 @@ jobs:
         working-directory: ./tf
     environment: DEV-Destroy
     needs: [terraform-plan-destroy]
-    
+
     steps:
     # Checkout the repository to the GitHub Actions runner
     - name: Checkout
@@ -302,4 +305,7 @@ jobs:
     # Terraform Apply
     - name: Terraform Apply
       run: |
-        terraform apply -auto-approve terraform.tfplan
+        terraform apply -auto-approve terraform.tfplan \
+            -var "client_id=$ARM_CLIENT_ID" \
+            -var "tenant_id=$ARM_TENANT_ID" \
+            -var "subscription_id=$ARM_SUBSCRIPTION_ID"

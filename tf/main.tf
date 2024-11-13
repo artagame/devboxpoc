@@ -28,6 +28,7 @@ provider "azapi" {
   use_oidc = true
 }
 
+
 # User Managed Identity
 resource "azurerm_user_assigned_identity" "userIdentity" {
   location            = data.azurerm_resource_group.rg.location
@@ -174,10 +175,16 @@ resource "azapi_resource" "imageTemplate" {
 
 # Example Azure CLI command to build the template and wait
 resource "null_resource" "build_image_template" {
+
   # triggers = {
   #   imageTemplateName = var.imageTemplateName
   # }
   provisioner "local-exec" {
+    environment = {
+      ARM_CLIENT_ID       = var.client_id
+      ARM_TENANT_ID       = var.tenant_id
+      ARM_SUBSCRIPTION_ID = var.subscription_id
+    }
     command = <<EOT
       az login
       az image builder run -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --no-wait
