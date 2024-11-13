@@ -205,6 +205,7 @@ resource "azurerm_dev_center_project_pool" "devBoxPool" {
   dev_center_project_id                   = azurerm_dev_center.devCenter.id
   dev_box_definition_name                 = azurerm_dev_center_dev_box_definition.devBoxDefinition.name
   local_administrator_enabled             = true
+  dev_center_attached_network_name        = "managedNetwork"
   stop_on_disconnect_grace_period_minutes = 60
   depends_on                              = [azurerm_dev_center_dev_box_definition.devBoxDefinition]
 }
