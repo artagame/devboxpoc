@@ -167,10 +167,7 @@ jobs:
     # Terraform Apply
     - name: Terraform Apply
       run: |
-        terraform apply -auto-approve terraform.tfplan \
-            -var "client_id=$ARM_CLIENT_ID" \
-            -var "tenant_id=$ARM_TENANT_ID" \
-            -var "subscription_id=$ARM_SUBSCRIPTION_ID"
+        terraform apply -auto-approve terraform.tfplan
 
   terraform-plan-destroy:
     name: 'Terraform Plan Destroy'
@@ -305,7 +302,4 @@ jobs:
     # Terraform Apply
     - name: Terraform Apply
       run: |
-        terraform apply -auto-approve terraform.tfplan \
-            -var "client_id=$ARM_CLIENT_ID" \
-            -var "tenant_id=$ARM_TENANT_ID" \
-            -var "subscription_id=$ARM_SUBSCRIPTION_ID"
+        terraform apply -auto-approve terraform.tfplan
