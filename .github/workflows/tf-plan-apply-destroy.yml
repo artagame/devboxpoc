@@ -132,7 +132,7 @@ jobs:
                 repo: context.repo.repo,
                 body: body
             })
-                
+
   terraform-apply:
     name: 'Terraform Apply'
     if: github.ref == 'refs/heads/main' && needs.terraform-plan.outputs.tfplanExitCode == 2
@@ -143,7 +143,7 @@ jobs:
         working-directory: ./tf
     environment: DEV-Apply
     needs: [terraform-plan]
-    
+
     steps:
     # Checkout the repository to the GitHub Actions runner
     - name: Checkout
@@ -167,6 +167,7 @@ jobs:
     # Terraform Apply
     - name: Terraform Apply
       run: |
+        az login --service-principal -u $AZURE_CLIENT_ID --tenant $AZURE_TENANT_ID --allow-no-subscriptions --federated-token ${{ secrets.GITHUB_TOKEN }}
         terraform apply -auto-approve terraform.tfplan
 
   terraform-plan-destroy:
@@ -267,7 +268,7 @@ jobs:
                 repo: context.repo.repo,
                 body: body
             })
-                
+
   terraform-destroy:
     name: 'Terraform Destroy'
     if: github.ref == 'refs/heads/main' && needs.terraform-plan-destroy.outputs.tfplanExitCode == 2

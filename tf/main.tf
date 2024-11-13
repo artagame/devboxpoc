@@ -28,7 +28,6 @@ provider "azapi" {
   use_oidc = true
 }
 
-
 # User Managed Identity
 resource "azurerm_user_assigned_identity" "userIdentity" {
   location            = data.azurerm_resource_group.rg.location
