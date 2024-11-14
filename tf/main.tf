@@ -181,9 +181,19 @@ resource "null_resource" "build_image_template" {
   # }
   provisioner "local-exec" {
     command = <<EOT
+      # Start a background process to refresh the token
+      (while true; do
+          az account get-access-token
+          sleep 1800  # Refresh every 30 minutes
+      done) &
+
+      # Run the main image builder commands
       az image builder run -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --no-wait
       az image builder wait -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --custom "lastRunStatus.runState!='Running'"
       az image builder show -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name}
+
+      # Kill the background refresh process after completion
+      kill $!
     EOT
   }
 
