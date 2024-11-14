@@ -189,11 +189,12 @@ resource "null_resource" "build_image_template" {
 
       # Run the main image builder commands
       az image builder run -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --no-wait
-      az image builder wait -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --custom "lastRunStatus.runState!='Running'"
+      az image builder wait -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --custom "lastRunStatus.runState=='Succeeded'"
       az image builder show -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name}
 
       # Kill the background refresh process after completion
       kill $!
+      sleep 300
     EOT
   }
 
