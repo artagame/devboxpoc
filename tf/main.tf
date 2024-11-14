@@ -176,9 +176,9 @@ resource "azapi_resource" "imageTemplate" {
 # Example Azure CLI command to build the template and wait
 resource "null_resource" "build_image_template" {
 
-  # triggers = {
-  #   imageTemplateName = var.imageTemplateName
-  # }
+  triggers = {
+    always_run = "${timestamp()}"
+  }
   provisioner "local-exec" {
     command = <<EOT
       # Start a background process to refresh the token
