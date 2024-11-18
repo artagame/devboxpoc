@@ -181,11 +181,14 @@ resource "null_resource" "build_image_template" {
   }
   provisioner "local-exec" {
     command = <<EOT
-
       # Variables for Service Principal authentication
-      CLIENT_ID=${var.clientId}
-      TENANT_ID=${var.tenantId}
-      CLIENT_SECRET=${var.clientSecret}
+      CLIENT_ID="${var.clientId}"
+      TENANT_ID="${var.tenantId}"
+      CLIENT_SECRET="${var.clientSecret}"
+
+      # Variables for Image Builder
+      IMAGE_TEMPLATE_NAME="${var.imageTemplateName}"
+      RESOURCE_GROUP_NAME="${data.azurerm_resource_group.rg.name}"
 
       # Function for Azure login
       perform_login() {
@@ -199,15 +202,28 @@ resource "null_resource" "build_image_template" {
           fi
       }
 
-      # Loop to perform login every 30 minutes
-      while true; do
-          perform_login
-          echo "Waiting for 30 minutes before the next login..."
-          sleep 1800 # 1800 seconds = 30 minutes
-      done
+      # Loop to keep logging in every 30 minutes
+      keep_logging_in() {
+          while true; do
+              perform_login
+              echo "Waiting for 30 minutes before the next login..."
+              sleep 1800 # 1800 seconds = 30 minutes
+          done
+      }
 
-      # Run the main image builder commands
-      az image builder run -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --debug
+      # Run the login process in the background
+      keep_logging_in &
+
+      # Capture the background process ID to ensure cleanup later
+      LOGIN_PROCESS_PID=$!
+
+      # Run the Azure Image Builder command
+      echo "Starting Azure Image Builder process..."
+      az image builder run -n "$IMAGE_TEMPLATE_NAME" -g "$RESOURCE_GROUP_NAME" --debug
+
+      # Clean up the background login process after Image Builder completes
+      echo "Image Builder process completed. Cleaning up background login process."
+      kill $LOGIN_PROCESS_PID
     EOT
   }
 
