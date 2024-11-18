@@ -74,7 +74,7 @@ jobs:
       id: tf-plan
       run: |
         export exitcode=0
-        terraform plan -var-file='variables/dev.tfvars' -var="clientId=${{ secrets.AZURE_CLIENT_ID }}" -var="tenantId=${{ secrets.AZURE_TENANT_ID }}" -var="clientId=${{ secrets.AZURE_CLIENT_SECRET }}" -detailed-exitcode -no-color -out terraform.tfplan || export exitcode=$?
+        terraform plan -var-file='variables/dev.tfvars' -var="clientId=${{ secrets.AZURE_CLIENT_ID }}" -var="tenantId=${{ secrets.AZURE_TENANT_ID }}" -var="clientSecret=${{ secrets.AZURE_CLIENT_SECRET }}" -detailed-exitcode -no-color -out terraform.tfplan || export exitcode=$?
 
         echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
 
