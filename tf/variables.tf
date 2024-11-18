@@ -33,3 +33,7 @@ variable "clientId" {
 variable "tenantId" {
   type = string
 }
+
+variable "clientSecret" {
+  type = string
+}
