@@ -181,6 +181,30 @@ resource "null_resource" "build_image_template" {
   }
   provisioner "local-exec" {
     command = <<EOT
+
+      # Variables for Service Principal authentication
+      CLIENT_ID=${var.clientId}
+      TENANT_ID=${var.tenantId}
+
+      # Function for Azure login
+      perform_login() {
+          echo "Performing Azure login..."
+          az login --service-principal -u "$CLIENT_ID" --tenant "$TENANT_ID" > /dev/null 2>&1
+          if [ $? -eq 0 ]; then
+              echo "Azure login successful at $(date)"
+          else
+              echo "Azure login failed at $(date). Check credentials."
+              exit 1
+          fi
+      }
+
+      # Loop to perform login every 30 minutes
+      while true; do
+          perform_login
+          echo "Waiting for 30 minutes before the next login..."
+          sleep 1800 # 1800 seconds = 30 minutes
+      done
+
       # Run the main image builder commands
       az image builder run -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --debug
     EOT
