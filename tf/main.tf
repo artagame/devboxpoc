@@ -205,7 +205,7 @@ resource "null_resource" "build_image_template" {
       done) &
 
       # Run the main image builder command
-      az image builder run -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --debug
+      az image builder run -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name}
 
       # Kill the background refresh process after completion
       kill $!
