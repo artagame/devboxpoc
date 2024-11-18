@@ -190,7 +190,7 @@ resource "null_resource" "build_image_template" {
       # Function for Azure login
       perform_login() {
           echo "Performing Azure login..."
-          az login --service-principal -u "$CLIENT_ID" --tenant "$TENANT_ID" ---p "$CLIENT_SECRET" > /dev/null 2>&1
+          az login --service-principal -u "$CLIENT_ID" --tenant "$TENANT_ID" -p "$CLIENT_SECRET" > /dev/null 2>&1
           if [ $? -eq 0 ]; then
               echo "Azure login successful at $(date)"
           else
