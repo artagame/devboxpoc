@@ -182,7 +182,9 @@ resource "null_resource" "build_image_template" {
   provisioner "local-exec" {
     command = <<EOT
       echo "Triggering Azure Image Builder..."
-      az image builder run -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --debug
+      az image builder run -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name} --no-wait
+      echo "Sleeping for 2 hours..."
+      sleep 7200
     EOT
   }
 
