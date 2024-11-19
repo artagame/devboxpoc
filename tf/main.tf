@@ -181,35 +181,11 @@ resource "null_resource" "build_image_template" {
   }
   provisioner "local-exec" {
     command = <<EOT
-
-      CLIENT_ID=${var.clientId}
-      TENANT_ID=${var.tenantId}
-      CLIENT_SECRET=${var.clientSecret}
-
-      # Function for Azure login
-      perform_login() {
-          echo "Performing Azure login..."
-          az login --service-principal -u "$CLIENT_ID" --tenant "$TENANT_ID" -p "$CLIENT_SECRET" > /dev/null 2>&1
-          if [ $? -eq 0 ]; then
-              echo "Azure login successful at $(date)"
-          else
-              echo "Azure login failed at $(date). Check credentials."
-              exit 1
-          fi
-      }
-
-      # Start a background process to refresh the token
-      (while true; do
-          perform_login
-          sleep 1800  # Refresh every 30 minutes
-      done) &
-
-      # Run the main image builder command
-      az image builder run -n ${var.imageTemplateName} -g ${data.azurerm_resource_group.rg.name}
-
-      # Kill the background refresh process after completion
-      kill $!
-      sleep 300
+      az resource invoke-action \
+          --resource-group ${data.azurerm_resource_group.rg.name} \
+          --resource-type  Microsoft.VirtualMachineImages/imageTemplates \
+          -n ${var.imageTemplateName} \
+          --action Run --debug
     EOT
   }
 
