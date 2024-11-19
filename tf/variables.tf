@@ -25,15 +25,3 @@ variable "imageTemplateName" {
 variable "devBoxPoolName" {
   type = string
 }
-
-variable "clientId" {
-  type = string
-}
-
-variable "tenantId" {
-  type = string
-}
-
-variable "clientSecret" {
-  type = string
-}

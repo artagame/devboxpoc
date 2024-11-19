@@ -74,7 +74,7 @@ jobs:
       id: tf-plan
       run: |
         export exitcode=0
-        terraform plan -var-file='variables/dev.tfvars' -var="clientId=${{ secrets.AZURE_CLIENT_ID }}" -var="tenantId=${{ secrets.AZURE_TENANT_ID }}" -var="clientSecret=${{ secrets.AZURE_CLIENT_SECRET }}" -detailed-exitcode -no-color -out terraform.tfplan || export exitcode=$?
+        terraform plan -var-file='variables/dev.tfvars' -detailed-exitcode -no-color -out terraform.tfplan || export exitcode=$?
 
         echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
 
@@ -164,12 +164,12 @@ jobs:
         path: tf
         name: tfplan
 
-    # - name: Azure CLI Login
-    #   uses: azure/login@v2
-    #   with:
-    #     client-id: ${{ secrets.AZURE_CLIENT_ID }}
-    #     tenant-id:  ${{ secrets.AZURE_TENANT_ID }}
-    #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    - name: Azure CLI Login
+      uses: azure/login@v2
+      with:
+        client-id: $ARM_CLIENT_ID
+        tenant-id:  $ARM_TENANT_ID
+        subscription-id: $ARM_SUBSCRIPTION_ID
 
     # Terraform Apply
     - name: Terraform Apply
