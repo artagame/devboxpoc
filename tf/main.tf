@@ -181,9 +181,14 @@ resource "null_resource" "build_image_template" {
   }
   provisioner "local-exec" {
     command = <<EOT
-      CLIENT_ID=${var.clientId}
-      TENANT_ID=${var.tenantId}
-      CLIENT_SECRET=${var.clientSecret}
+      # Variables for Service Principal authentication
+      CLIENT_ID="${var.clientId}"
+      TENANT_ID="${var.tenantId}"
+      CLIENT_SECRET="${var.clientSecret}"
+
+      # Variables for Resource and Image Template
+      RESOURCE_GROUP_NAME="${data.azurerm_resource_group.rg.name}"
+      IMAGE_TEMPLATE_NAME="${var.imageTemplateName}"
 
       # Function for Azure login
       perform_login() {
@@ -202,17 +207,28 @@ resource "null_resource" "build_image_template" {
           perform_login
           sleep 1800  # Refresh every 30 minutes
       done) &
+      REFRESHER_PID=$!  # Capture the process ID for cleanup later
 
-      # Run the main image builder command
+      # Run the main Image Builder invoke-action command
+      echo "Triggering Azure Image Builder..."
       az resource invoke-action \
-          --resource-group ${data.azurerm_resource_group.rg.name} \
-          --resource-type  Microsoft.VirtualMachineImages/imageTemplates \
-          -n ${var.imageTemplateName} \
+          --resource-group "$RESOURCE_GROUP_NAME" \
+          --resource-type "Microsoft.VirtualMachineImages/imageTemplates" \
+          --name "$IMAGE_TEMPLATE_NAME" \
           --action Run --debug
 
-      # Kill the background refresh process after completion
-      kill $!
-      sleep 300
+      # Capture the exit code of the invoke-action command
+      EXIT_CODE=$?
+
+      # Clean up the background login refresher
+      echo "Stopping the background Azure login refresher."
+      kill $REFRESHER_PID
+
+      # Ensure some wait time for cleanup if needed
+      sleep 5
+
+      # Exit with the same status as the invoke-action command
+      exit $EXIT_CODE
     EOT
   }
 
