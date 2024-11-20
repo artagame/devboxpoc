@@ -207,7 +207,23 @@ resource "azurerm_dev_center_project_pool" "devBoxPool" {
   dev_center_project_id                   = azurerm_dev_center_project.devCenterProject.id
   dev_box_definition_name                 = azurerm_dev_center_dev_box_definition.devBoxDefinition.name
   local_administrator_enabled             = true
-  dev_center_attached_network_name        = ""
+  dev_center_attached_network_name        = "managedNetwork"
   stop_on_disconnect_grace_period_minutes = 60
   depends_on                              = [azurerm_dev_center_dev_box_definition.devBoxDefinition]
+}
+
+resource "azapi_resource" "symbolicname" {
+  type      = "Microsoft.DevCenter/projects/pools@2023-04-01"
+  name      = var.devBoxPoolName
+  location  = data.azurerm_resource_group.rg.location
+  parent_id = azurerm_dev_center_project.devCenterProject.id
+  body = jsonencode({
+    properties = {
+      devBoxDefinitionName  = azurerm_dev_center_dev_box_definition.devBoxDefinition.name
+      licenseType           = "Windows_Client"
+      localAdministrator    = "Enabled"
+      networkConnectionName = "managedNetwork"
+      singleSignOnStatus    = "Enabled"
+    }
+  })
 }
