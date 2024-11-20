@@ -67,12 +67,6 @@ resource "azurerm_shared_image_gallery" "azureGallery" {
   description         = "Test Gallery"
 }
 
-resource "azurerm_dev_center_gallery" "devCenterGallery" {
-  dev_center_id     = azurerm_dev_center.devCenter.id
-  shared_gallery_id = azurerm_shared_image_gallery.azureGallery.id
-  name              = var.galleryName
-}
-
 resource "azurerm_shared_image" "customImageDefinition" {
   name                = var.imageDefinitionName
   gallery_name        = azurerm_shared_image_gallery.azureGallery.name
@@ -93,6 +87,12 @@ resource "azurerm_shared_image" "customImageDefinition" {
   min_recommended_memory_in_gb = 1
   max_recommended_memory_in_gb = 32
   depends_on                   = [azurerm_shared_image_gallery.azureGallery]
+}
+
+resource "azurerm_dev_center_gallery" "dcGallery" {
+  dev_center_id     = azurerm_dev_center.devCenter.id
+  shared_gallery_id = azurerm_shared_image_gallery.azureGallery.id
+  name              = var.galleryName
 }
 
 resource "azapi_resource" "imageTemplate" {
@@ -196,7 +196,7 @@ resource "azurerm_dev_center_dev_box_definition" "devBoxDefinition" {
   name               = azapi_resource.imageTemplate.name
   location           = data.azurerm_resource_group.rg.location
   dev_center_id      = azurerm_dev_center.devCenter.id
-  image_reference_id = azurerm_shared_image.customImageDefinition.id
+  image_reference_id = "${azurerm_dev_center.devCenter.id}/galleries/${azurerm_shared_image_gallery.azureGallery.name}/images/${var.imageTemplateName}"
   sku_name           = "general_i_8c32gb256ssd_v2"
   depends_on         = [null_resource.build_image_template]
 }
