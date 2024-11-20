@@ -212,18 +212,17 @@ resource "azurerm_dev_center_project_pool" "devBoxPool" {
   depends_on                              = [azurerm_dev_center_dev_box_definition.devBoxDefinition]
 }
 
-resource "azapi_resource" "symbolicname" {
+resource "azapi_resource" "devboxPool" {
   type      = "Microsoft.DevCenter/projects/pools@2023-04-01"
   name      = var.devBoxPoolName
   location  = data.azurerm_resource_group.rg.location
   parent_id = azurerm_dev_center_project.devCenterProject.id
-  body = jsonencode({
+  body = {
     properties = {
       devBoxDefinitionName  = azurerm_dev_center_dev_box_definition.devBoxDefinition.name
       licenseType           = "Windows_Client"
       localAdministrator    = "Enabled"
       networkConnectionName = "managedNetwork"
-      singleSignOnStatus    = "Enabled"
     }
-  })
+  }
 }
