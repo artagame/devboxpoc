@@ -201,17 +201,6 @@ resource "azurerm_dev_center_dev_box_definition" "devBoxDefinition" {
   depends_on         = [null_resource.build_image_template]
 }
 
-resource "azurerm_dev_center_project_pool" "devBoxPool" {
-  name                                    = var.devBoxPoolName
-  location                                = data.azurerm_resource_group.rg.location
-  dev_center_project_id                   = azurerm_dev_center_project.devCenterProject.id
-  dev_box_definition_name                 = azurerm_dev_center_dev_box_definition.devBoxDefinition.name
-  local_administrator_enabled             = true
-  dev_center_attached_network_name        = "managedNetwork"
-  stop_on_disconnect_grace_period_minutes = 60
-  depends_on                              = [azurerm_dev_center_dev_box_definition.devBoxDefinition]
-}
-
 resource "azapi_resource" "devboxPool" {
   type      = "Microsoft.DevCenter/projects/pools@2023-04-01"
   name      = var.devBoxPoolName
@@ -225,4 +214,5 @@ resource "azapi_resource" "devboxPool" {
       networkConnectionName = "managedNetwork"
     }
   }
+  depends_on = [azurerm_dev_center_dev_box_definition.devBoxDefinition]
 }
