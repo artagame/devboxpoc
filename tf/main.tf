@@ -196,7 +196,7 @@ resource "azurerm_dev_center_dev_box_definition" "devBoxDefinition" {
   name               = azapi_resource.imageTemplate.name
   location           = data.azurerm_resource_group.rg.location
   dev_center_id      = azurerm_dev_center.devCenter.id
-  image_reference_id = "${azurerm_dev_center.devCenter.id}/galleries/${azurerm_shared_image_gallery.azureGallery.name}/images/${var.imageTemplateName}"
+  image_reference_id = "${azurerm_dev_center_gallery.dcGallery.id}/images/${var.imageTemplateName}"
   sku_name           = "general_i_8c32gb256ssd_v2"
   depends_on         = [null_resource.build_image_template]
 }
