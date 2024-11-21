@@ -211,7 +211,7 @@ resource "azapi_resource" "devboxPool" {
       devBoxDefinitionName  = azurerm_dev_center_dev_box_definition.devBoxDefinition.name
       licenseType           = "Windows_Client"
       localAdministrator    = "Enabled"
-      networkConnectionName = "managedNetwork"
+      networkConnectionName = "DevCenterNetworkConnection"
     }
   }
   depends_on = [azurerm_dev_center_dev_box_definition.devBoxDefinition]
