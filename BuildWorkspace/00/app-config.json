@@ -1,0 +1,32 @@
+{
+  "name": "Finance App",
+  "description": "Official Finance workspace app",
+  "appTheme": {
+    "color": "#2F5597",
+    "logoBackgroundColor": "#FFFFFF"
+  },
+  "audiences": [
+    {
+      "name": "Finance Team",
+      "members": [ "finance@contoso.com" ],
+      "accessRight": "Viewer"
+    }
+  ],
+  "navigation": {
+    "showNavigation": true,
+    "sections": [
+      {
+        "name": "Sales Reports",
+        "items": [
+          { "reportName": "SalesOverview" }
+        ]
+      },
+      {
+        "name": "Operations",
+        "items": [
+          { "reportName": "OpsDashboard" }
+        ]
+      }
+    ]
+  }
+}
