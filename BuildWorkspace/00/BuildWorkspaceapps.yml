@@ -1,0 +1,39 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - app-config.json   # only trigger when config changes
+
+stages:
+- stage: BuildApp
+  displayName: "Build App Config Artifact"
+  jobs:
+  - job: BuildConfig
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+    - checkout: self
+
+    - task: PowerShell@2
+      displayName: "Validate app-config.json"
+      inputs:
+        targetType: inline
+        script: |
+          $path = "$(Build.SourcesDirectory)\app-config.json"
+          if (-not (Test-Path $path)) {
+              throw "❌ app-config.json not found!"
+          }
+
+          try {
+              $json = Get-Content $path | ConvertFrom-Json
+              Write-Host "✅ app-config.json is valid"
+          }
+          catch {
+              throw "❌ Invalid JSON format in app-config.json"
+          }
+
+    - publish: $(Build.SourcesDirectory)\app-config.json
+      artifact: appconfig
+      displayName: "Publish app-config.json artifact"p
