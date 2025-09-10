@@ -3,14 +3,19 @@ $artifactDir = "$(Build.ArtifactStagingDirectory)"
 $newManifestPath = Join-Path $artifactDir "rdl-manifest.json"
 
 # Step 1: Compute hashes
+# Step 1: Compute hashes
 $newHashes = @()
 Get-ChildItem -Path $rdlFolder -Filter *.rdl -File -Recurse | ForEach-Object {
     $hash = Get-FileHash -Algorithm SHA256 -Path $_.FullName
+    $relativePath = $_.FullName.Substring($rdlFolder.Length+1)
+    $folder = Split-Path $relativePath -Parent  # this is the repo subfolder
+
     $newHashes += [PSCustomObject]@{
-        FileName = $_.Name
-        RelativePath = $_.FullName.Substring($rdlFolder.Length+1)
-        Hash = $hash.Hash
-        FullPath = $_.FullName
+        FileName    = $_.Name
+        RelativePath = $relativePath
+        Folder      = $folder
+        Hash        = $hash.Hash
+        FullPath    = $_.FullName
     }
 }
 
