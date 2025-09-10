@@ -1,0 +1,79 @@
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    pool: 
+      name: 'SelfHostedPool'
+    steps:
+    # Download previous artifacts (if any)
+    - task: DownloadBuildArtifacts@1
+      displayName: 'Download previous manifest'
+      inputs:
+        buildType: 'specific'
+        project: '$(System.TeamProject)'
+        definition: '$(Build.DefinitionName)'
+        buildVersionToDownload: 'latestFromBranch'
+        branchName: 'refs/heads/main'
+        downloadPath: '$(Pipeline.Workspace)\previous'
+      continueOnError: true   # first build won't have old manifest
+
+    # Compare + prepare changed RDLs
+    - task: PowerShell@2
+      displayName: 'Compare RDLs and prepare artifacts'
+      inputs:
+        targetType: inline
+        script: |
+          $rdlFolder = "$(Build.SourcesDirectory)\reports"
+          $artifactDir = "$(Build.ArtifactStagingDirectory)"
+          New-Item -ItemType Directory -Force -Path $artifactDir | Out-Null
+          
+          # script block from above (compute hash + compare + copy)
+          $rdlFolder = "$(Build.SourcesDirectory)\reports"
+          $artifactDir = "$(Build.ArtifactStagingDirectory)"
+          $newManifestPath = Join-Path $artifactDir "rdl-manifest.json"
+
+          $newHashes = @()
+          Get-ChildItem -Path $rdlFolder -Filter *.rdl -File -Recurse | ForEach-Object {
+              $hash = Get-FileHash -Algorithm SHA256 -Path $_.FullName
+              $newHashes += [PSCustomObject]@{
+                  FileName = $_.Name
+                  RelativePath = $_.FullName.Substring($rdlFolder.Length+1)
+                  Hash = $hash.Hash
+                  FullPath = $_.FullName
+              }
+          }
+
+          $oldManifestPath = "$(Pipeline.Workspace)\previous\rdl\rdl-manifest.json"
+          $oldHashes = @()
+          if (Test-Path $oldManifestPath) {
+              $oldHashes = Get-Content $oldManifestPath | ConvertFrom-Json
+          }
+
+          $changed = @()
+          foreach ($n in $newHashes) {
+              $match = $oldHashes | Where-Object { $_.FileName -eq $n.FileName }
+              if (-not $match) {
+                  Write-Host "NEW report: $($n.FileName)"
+                  $changed += $n
+              }
+              elseif ($match.Hash -ne $n.Hash) {
+                  Write-Host "CHANGED report: $($n.FileName)"
+                  $changed += $n
+              }
+              else {
+                  Write-Host "UNCHANGED report: $($n.FileName)"
+              }
+          }
+
+          foreach ($c in $changed) {
+              $targetPath = Join-Path $artifactDir $c.FileName
+              Copy-Item $c.FullPath $targetPath -Force
+          }
+
+          $newHashes | ConvertTo-Json -Depth 3 | Out-File $newManifestPath
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish changed RDLs'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'rdl'
