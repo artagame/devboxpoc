@@ -1,0 +1,73 @@
+trigger: none   # run manually or via release pipeline
+
+stages:
+- stage: DeployApp
+  displayName: "Deploy Power BI App"
+  jobs:
+  - deployment: UpdateApp
+    environment: powerbi-app
+    pool:
+      vmImage: 'windows-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: appconfig
+
+          - powershell: |
+              param(
+                  [string]$TenantId,
+                  [string]$ClientId,
+                  [string]$ClientSecret,
+                  [string]$WorkspaceName
+              )
+
+              function Get-AccessToken {
+                  param($TenantId, $ClientId, $ClientSecret)
+                  $body = @{
+                      grant_type    = "client_credentials"
+                      scope         = "https://analysis.windows.net/powerbi/api/.default"
+                      client_id     = $ClientId
+                      client_secret = $ClientSecret
+                  }
+                  $response = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token" -Body $body
+                  return $response.access_token
+              }
+
+              function Get-WorkspaceId {
+                  param($AccessToken, $WorkspaceName)
+                  $uri = "https://api.powerbi.com/v1.0/myorg/groups"
+                  $headers = @{ Authorization = "Bearer $AccessToken" }
+                  $groups = Invoke-RestMethod -Uri $uri -Headers $headers -Method Get
+                  $workspace = $groups.value | Where-Object { $_.name -eq $WorkspaceName }
+                  if (-not $workspace) {
+                      throw "❌ Workspace '$WorkspaceName' not found!"
+                  }
+                  return $workspace.id
+              }
+
+              function Update-WorkspaceApp {
+                  param($AccessToken, $WorkspaceId, $AppConfigPath)
+                  $uri = "https://api.powerbi.com/v1.0/myorg/groups/$WorkspaceId/UpdateApp"
+                  $headers = @{ Authorization = "Bearer $AccessToken"; "Content-Type" = "application/json" }
+                  $appConfig = Get-Content $AppConfigPath -Raw
+                  Write-Host "📦 Updating App..."
+                  Invoke-RestMethod -Uri $uri -Method Post -Headers $headers -Body $appConfig
+                  Write-Host "✅ App updated successfully."
+              }
+
+              # ==== Main ====
+              Write-Host "🔑 Authenticating..."
+              $token = Get-AccessToken -TenantId $TenantId -ClientId $ClientId -ClientSecret $ClientSecret
+
+              Write-Host "📂 Resolving workspace..."
+              $workspaceId = Get-WorkspaceId -AccessToken $token -WorkspaceName $WorkspaceName
+
+              Update-WorkspaceApp -AccessToken $token -WorkspaceId $workspaceId -AppConfigPath "$(Pipeline.Workspace)\appconfig\app-config.json"
+            displayName: "Update Power BI App"
+            env:
+              TenantId: $(TenantId)
+              ClientId: $(ClientId)
+              ClientSecret: $(ClientSecret)
+              WorkspaceName: $(WorkspaceName)
