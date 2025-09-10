@@ -121,6 +121,25 @@ function Upload-Rdl {
         }
     }
 }
+# ===== Ensure MicrosoftPowerBIMgmt module is installed =====
+$moduleName = "MicrosoftPowerBIMgmt"
+
+if (-not (Get-Module -ListAvailable -Name $moduleName)) {
+    Write-Host "📦 Module '$moduleName' not found. Installing..."
+    try {
+        Install-Module -Name $moduleName -Scope CurrentUser -Force -AllowClobber
+        Write-Host "✅ Module '$moduleName' installed successfully."
+    }
+    catch {
+        throw "❌ Failed to install module '$moduleName': $($_.Exception.Message)"
+    }
+}
+else {
+    Write-Host "✅ Module '$moduleName' is already installed."
+}
+
+# Import module
+Import-Module $moduleName -Global
 
 # ===== Main Execution =====
 
