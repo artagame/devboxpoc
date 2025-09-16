@@ -1,90 +1,99 @@
 param(
-    [string]$TenantId = "<YourTenantID>",
-    [string]$ClientId = "<ServicePrincipalID>",
-    [string]$ClientSecret = "<ServicePrincipalSecret>",
-    [string]$WorkspaceId = "<YourWorkspaceID>",
-    [string]$ManifestPath = ".\manifest.json"
+    [string]$TenantId      = "<YourTenantID>",
+    [string]$ClientId      = "<YourServicePrincipalId>",
+    [string]$ClientSecret  = "<YourServicePrincipalSecret>",
+    [string]$WorkspaceId   = "<YourWorkspaceId>",
+    [string]$ManifestPath  = ".\manifest.json"
 )
 
-# ===== Helper Functions =====
+# === Helper: Get Access Token ===
 function Get-AccessToken {
     param($TenantId, $ClientId, $ClientSecret)
 
-    $Body = @{
+    $body = @{
         grant_type    = "client_credentials"
         client_id     = $ClientId
         client_secret = $ClientSecret
         scope         = "https://api.fabric.microsoft.com/.default"
     }
 
-    $Response = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token" -Body $Body
-    return $Response.access_token
+    $response = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token" -Body $body
+    return $response.access_token
 }
 
-function Get-ExistingFolders {
-    param($AccessToken, $WorkspaceId)
+# === Helper: Get Existing Folders ===
+function Get-Folders {
+    param(
+        [string]$WorkspaceId,
+        [string]$AccessToken
+    )
 
-    $Uri = "https://api.fabric.microsoft.com/v1/workspaces/$WorkspaceId/folders"
-    $Headers = @{ Authorization = "Bearer $AccessToken" }
+    $uri = "https://api.fabric.microsoft.com/v1/workspaces/$WorkspaceId/folders"
 
-    $Response = Invoke-RestMethod -Uri $Uri -Headers $Headers -Method Get
-    return $Response.value  # returns objects with id and name
-}
-
-function Create-Folder {
-    param($AccessToken, $WorkspaceId, $FolderName)
-
-    $Uri = "https://api.fabric.microsoft.com/v1/workspaces/$WorkspaceId/folders"
-    $Headers = @{
-        Authorization = "Bearer $AccessToken"
-        "Content-Type" = "application/json"
+    $response = Invoke-RestMethod -Method Get -Uri $uri -Headers @{
+        "Authorization" = "Bearer $AccessToken"
     }
 
-    $Body = @{ name = $FolderName } | ConvertTo-Json -Depth 2
-    $Response = Invoke-RestMethod -Uri $Uri -Headers $Headers -Method Post -Body $Body
-    Write-Host "Created folder: $FolderName (ID: $($Response.id))"
-    return $Response.id
+    return $response.value
 }
 
-function Ensure-Folders {
-    param($AccessToken, $WorkspaceId, $FolderPath)
+# === Helper: Create Folder if Needed ===
+function Ensure-Folder {
+    param(
+        [string]$WorkspaceId,
+        [string]$FolderName,
+        [string]$ParentId,
+        [string]$AccessToken,
+        [array]$AllFolders
+    )
 
-    # Split nested folder path
-    $Folders = $FolderPath -split '\\'
-    $CurrentPath = ""
-    $LastFolderId = $null
+    # Find if folder already exists under the same parent
+    $existing = $AllFolders | Where-Object { $_.displayName -eq $FolderName -and ($_.parentId -eq $ParentId -or (-not $_.parentId -and -not $ParentId)) }
 
-    foreach ($Folder in $Folders) {
-        $CurrentPath = if ($CurrentPath) { "$CurrentPath\$Folder" } else { $Folder }
-
-        $ExistingFolders = Get-ExistingFolders -AccessToken $AccessToken -WorkspaceId $WorkspaceId
-
-        $Match = $ExistingFolders | Where-Object { $_.name -eq $CurrentPath }
-
-        if ($null -eq $Match) {
-            $LastFolderId = Create-Folder -AccessToken $AccessToken -WorkspaceId $WorkspaceId -FolderName $CurrentPath
-        }
-        else {
-            $LastFolderId = $Match.id
-            Write-Host "Folder already exists: $CurrentPath (ID: $LastFolderId)"
-        }
+    if ($existing) {
+        return $existing.id
     }
 
-    return $LastFolderId
+    # Create folder if not found
+    $uri = "https://api.fabric.microsoft.com/v1/workspaces/$WorkspaceId/folders"
+
+    $body = @{
+        displayName = $FolderName
+    }
+
+    if ($ParentId) {
+        $body.parentId = $ParentId
+    }
+
+    $jsonBody = $body | ConvertTo-Json -Depth 5
+
+    $response = Invoke-RestMethod -Method Post -Uri $uri -Headers @{
+        "Authorization" = "Bearer $AccessToken"
+        "Content-Type"  = "application/json"
+    } -Body $jsonBody
+
+    # Add new folder to cache
+    $AllFolders += $response
+
+    return $response.id
 }
 
-# ===== Main Execution =====
-$AccessToken = Get-AccessToken -TenantId $TenantId -ClientId $ClientId -ClientSecret $ClientSecret
+# === Main Logic ===
+$token = Get-AccessToken -TenantId $TenantId -ClientId $ClientId -ClientSecret $ClientSecret
 
-$Manifest = Get-Content $ManifestPath | ConvertFrom-Json
+$manifest = Get-Content $ManifestPath | ConvertFrom-Json
+$allFolders = Get-Folders -WorkspaceId $WorkspaceId -AccessToken $token
 
-$FoldersToCreate = if ($Manifest.Folder -is [System.Collections.IEnumerable] -and $Manifest.Folder -notis [string]) {
-    $Manifest.Folder
-} else {
-    @($Manifest.Folder)
-}
+foreach ($entry in $manifest) {
+    $folderPath = $entry.Folder -split "\\\\|/"
+    $parentId = $null
+    $lastFolderId = $null
 
-foreach ($FolderPath in $FoldersToCreate) {
-    $FolderId = Ensure-Folders -AccessToken $AccessToken -WorkspaceId $WorkspaceId -FolderPath $FolderPath
-    Write-Host "Final folder ID for '$FolderPath': $FolderId"
+    foreach ($folder in $folderPath) {
+        $folderId = Ensure-Folder -WorkspaceId $WorkspaceId -FolderName $folder -ParentId $parentId -AccessToken $token -AllFolders ([ref]$allFolders).Value
+        $parentId = $folderId
+        $lastFolderId = $folderId
+    }
+
+    Write-Output "Last folder created (or existing) ID: $lastFolderId"
 }
