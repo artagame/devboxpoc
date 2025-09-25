@@ -1,36 +1,46 @@
 {
-  "JobName": "MySSISJob",
-  "JobCategory": "SSIS Jobs",
-  "Description": "Run SSIS packages with Proxy, flow control, and operator notifications",
-  "Enabled": true,
-  "Steps": [
+  "Jobs": [
     {
-      "StepName": "Run ETL Package",
-      "Subsystem": "SSIS",
-      "SSIS": {
-        "PackagePath": "\\SSISDB\\MyFolder\\MyProject\\MyPackage.dtsx",
-        "Server": "localhost",
-        "Catalog": true,
-        "Environment": "DevEnv"
+      "JobName": "MySSISJob",
+      "Create": true,
+      "JobCategory": "SSIS Jobs",
+      "Description": "Run SSIS packages",
+      "Enabled": true,
+      "Steps": [
+        {
+          "StepName": "Run ETL Package",
+          "Subsystem": "SSIS",
+          "SSIS": {
+            "PackagePath": "\\SSISDB\\MyFolder\\MyProject\\MyPackage.dtsx",
+            "Server": "localhost",
+            "Catalog": true,
+            "Environment": "DevEnv"
+          },
+          "ProxyName": "SSISProxyAccount"
+        }
+      ],
+      "Schedule": {
+        "Name": "Daily ETL Run",
+        "FrequencyType": "Daily",
+        "FrequencyInterval": 1,
+        "ActiveStartTimeOfDay": "01:00"
       },
-      "ProxyName": "SSISProxyAccount"
-    }
-  ],
-  "Schedule": {
-    "Name": "Daily ETL Run",
-    "FrequencyType": "Daily",
-    "FrequencyInterval": 1,
-    "ActiveStartTimeOfDay": "01:00"
-  },
-  "Notifications": {
-    "Operators": [
-      { "Name": "DBA Team", "Email": "dba-team@company.com" }
-    ],
-    "NotifyOn": {
-      "OnFailure": true,
-      "OnSuccess": false,
-      "OnCompletion": true
+      "Notifications": {
+        "Operators": [
+          { "Name": "DBA Team", "Email": "dba-team@company.com" }
+        ],
+        "NotifyOn": {
+          "OnFailure": true,
+          "OnSuccess": false,
+          "OnCompletion": true
+        },
+        "Methods": [ "Email" ]
+      }
     },
-    "Methods": [ "Email" ] 
-  }
+    {
+      "JobName": "AdhocJob",
+      "Create": false,
+      "Description": "This job is defined but won't be created"
+    }
+  ]
 }
